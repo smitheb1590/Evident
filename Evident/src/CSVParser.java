@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.IllegalArgumentException;
+import java.math.BigDecimal;
 import java.util.TreeMap;
 
 
@@ -16,14 +17,14 @@ public class CSVParser {
 	}
 	
 	
-	public TreeMap<String, Double> parseFile(String file) {
+	public TreeMap<String, BigDecimal> parseFile(String file) {
 		String line = "";
 		String[] employeeInformation = null;
 		String employeeName;
 		String employeeDOB;
 		String employeeRole;
-		double employeeSalary;
-		TreeMap<String, Double> tmap = new TreeMap<String, Double>(); //Bad Generic BAD!!! 
+		BigDecimal employeeSalary;
+		TreeMap<String, BigDecimal> totalSalaryMap = new TreeMap<String, BigDecimal>(); 
 		
 		
 		if (file == null) {
@@ -35,18 +36,18 @@ public class CSVParser {
 		}
 		
 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file)))  {
-			tmap.put(TOTAL_SALARY_KEY, 0.0);
+			totalSalaryMap.put(TOTAL_SALARY_KEY, new BigDecimal("0.00"));
 			while( (line = bufferedReader.readLine()) != null) {
 				employeeInformation = line.split(COMMA_DELIMITER);
 				if(employeeInformation.length == 4) {
 					employeeName = employeeInformation[0];
 					employeeDOB = employeeInformation[1];
-					employeeSalary = Double.parseDouble(employeeInformation[2]);
+					employeeSalary = new BigDecimal(employeeInformation[2]);
 					employeeRole = employeeInformation[3];
 					
 					
-					tmap.put(TOTAL_SALARY_KEY, tmap.get(TOTAL_SALARY_KEY) + employeeSalary);
-					tmap.put(employeeRole, tmap.getOrDefault(employeeRole, 0.0) + employeeSalary);
+					totalSalaryMap.put(TOTAL_SALARY_KEY, totalSalaryMap.get(TOTAL_SALARY_KEY).add(employeeSalary));
+					totalSalaryMap.put(employeeRole, totalSalaryMap.getOrDefault(employeeRole, new BigDecimal("0.00")).add(employeeSalary));
 				}
 				else {
 					throw new IllegalArgumentException("CSV file is improperly formatted!");
@@ -56,6 +57,6 @@ public class CSVParser {
 		catch(IOException e){
 			e.printStackTrace();
 		}
-		return tmap;
+		return totalSalaryMap;
 	}
 }
